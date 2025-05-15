@@ -1,0 +1,71 @@
+﻿<Page
+    x:Class="STRETCHING.Pages.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:STRETCHING.Pages"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Title="MainPage"
+    Style="{StaticResource pageStyle}"
+    mc:Ignorable="d">
+
+    
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <TextBlock
+            Margin="0,0,0,20"
+            HorizontalAlignment="Center"
+            FontSize="28"
+            FontWeight="Bold"
+            Foreground="#2A503D"
+            Text="Панель администратора" />
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="3*" />
+                <ColumnDefinition Width="2*" />
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0">
+
+                <Border Style="{StaticResource ListContainer}">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource SectionTitle}" Text="Расписание занятий" />
+                        <ListBox x:Name="ScheduleList">
+
+                            <ListBoxItem Content="10:00 - Стретчинг (Зал 1, Тренер: Анна)" />
+                            <ListBoxItem Content="12:00 - Аэростретчинг (Зал 2, Тренер: Мария)" />
+                        </ListBox>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource ListContainer}">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource SectionTitle}" Text="Бронирования залов" />
+                        <ListBox x:Name="BookingsList">
+
+                            <ListBoxItem Content="Зал 1 - 18:00, Тренировка персональная" />
+                            <ListBoxItem Content="Зал 2 - 19:00, Аренда" />
+                        </ListBox>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+
+            <Border Grid.Column="1" Style="{StaticResource ListContainer}">
+                <StackPanel>
+                    <TextBlock Style="{StaticResource SectionTitle}" Text="Задачи" />
+                    <ListBox x:Name="TasksList">
+
+                        <ListBoxItem Content="Позвонить клиентке Ивановой" />
+                        <ListBoxItem Content="Проверить оплату абонементов" />
+                        <ListBoxItem Content="Подтвердить занятие на 16:00" />
+                    </ListBox>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</Page>

@@ -1,0 +1,80 @@
+﻿<Page
+    x:Class="STRETCHING.Pages.ClientsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:STRETCHING.Pages"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Title="ClientsPage"
+    Style="{StaticResource pageStyle}"
+    mc:Ignorable="d">
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!--  Заголовок  -->
+        <TextBlock Style="{StaticResource SectionTitle}" Text="Клиенты" />
+
+        <!--  Поиск и кнопки  -->
+        <DockPanel Grid.Row="1" Margin="0,0,0,10">
+            <Border
+                BorderBrush="#BBA276"
+                BorderThickness="1"
+                CornerRadius="6"
+                UseLayoutRounding="True">
+                <TextBox
+                    x:Name="SearchBox"
+                    VerticalAlignment="Center"
+                    Width="250"
+                    Style="{StaticResource SearchBox}"
+                    TextChanged="SearchBox_TextChanged" />
+            </Border>
+
+
+            <StackPanel
+                HorizontalAlignment="Right"
+                DockPanel.Dock="Right"
+                Orientation="Horizontal">
+                <Button
+                    Click="AddClient_Click"
+                    Content="Добавить"
+                    Style="{StaticResource MainButton}" />
+                <Button
+                    Click="EditClient_Click"
+                    Content="Редактировать"
+                    Style="{StaticResource MainButton}" />
+            </StackPanel>
+        </DockPanel>
+
+        <!--  Список клиентов  -->
+        <Border
+            Grid.Row="2"
+            Height="650"
+            VerticalAlignment="Top"
+            Background="#FAFAFA"
+            BorderBrush="#BBA276"
+            BorderThickness="1"
+            CornerRadius="8">
+            <ScrollViewer>
+                <ListBox x:Name="ClientsListBox" Margin="10">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Margin="5">
+                                <TextBlock FontSize="14" Text="{Binding FullName}" />
+                                <TextBlock
+                                    FontSize="12"
+                                    Foreground="Gray"
+                                    Text="{Binding RoleName}" />
+                            </StackPanel>
+
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </ScrollViewer>
+        </Border>
+    </Grid>
+</Page>
