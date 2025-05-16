@@ -1,0 +1,98 @@
+﻿<Window x:Class="STRETCHING.Windows.AddClient"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
+        xmlns:local="clr-namespace:STRETCHING.Windows"
+        mc:Ignorable="d"
+        Title="Добавить клиента" Height="600" Width="450"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="NoResize"
+        Background="#FFF9F9F9">
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Заголовок -->
+        <TextBlock Text="Добавление клиента"
+                   FontSize="18"
+                   FontWeight="Bold"
+                   Foreground="#2A503D"
+                   HorizontalAlignment="Center"
+                   Margin="0,0,0,10"/>
+
+        <!-- Вкладки -->
+        <TabControl Grid.Row="1" BorderBrush="#BBA276" BorderThickness="1">
+            <!-- Вкладка Основное -->
+            <TabItem Header="Основное">
+                <StackPanel Margin="10">
+                    <TextBlock Text="Фамилия" Foreground="#2A503D"/>
+                    <TextBox x:Name="LastNameBox" Margin="0,0,0,10"/>
+
+                    <TextBlock Text="Имя" Foreground="#2A503D"/>
+                    <TextBox x:Name="FirstNameBox" Margin="0,0,0,10"/>
+
+                    <TextBlock Text="Отчество" Foreground="#2A503D"/>
+                    <TextBox x:Name="MiddleNameBox" Margin="0,0,0,10"/>
+
+                    <TextBlock Text="Дата рождения" Foreground="#2A503D"/>
+                    <DatePicker x:Name="BirthDatePicker" Margin="0,0,0,10"/>
+                </StackPanel>
+            </TabItem>
+
+            <!-- Вкладка Контакты -->
+            <TabItem Header="Контакты">
+                <StackPanel Margin="10">
+                    <TextBlock Text="Телефон" Foreground="#2A503D"/>
+                    <TextBox x:Name="PhoneBox" Margin="0,0,0,10"/>
+
+                    <TextBlock Text="Email" Foreground="#2A503D"/>
+                    <TextBox x:Name="EmailBox"/>
+                </StackPanel>
+            </TabItem>
+
+            <!-- Вкладка Абонемент -->
+            <TabItem Header="Абонемент">
+                <StackPanel Margin="10">
+                    <TextBlock Text="Роль" Foreground="#2A503D"/>
+                    <ComboBox x:Name="RoleComboBox" Margin="0,0,0,10"/>
+
+                    <TextBlock Text="Тип абонемента" Foreground="#2A503D"/>
+                    <ComboBox x:Name="SubscriptionComboBox"/>
+                </StackPanel>
+            </TabItem>
+
+            <!-- Вкладка Здоровье -->
+            <TabItem Header="Здоровье">
+                <StackPanel Margin="10">
+                    <TextBlock Text="Медицинские показания" Foreground="#2A503D"/>
+                    <TextBox x:Name="HealthNotesBox"
+                             AcceptsReturn="True"
+                             TextWrapping="Wrap"
+                             Height="100"
+                             VerticalScrollBarVisibility="Auto"/>
+                </StackPanel>
+            </TabItem>
+        </TabControl>
+
+        <!-- Кнопки -->
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,10,0,0">
+            <Button Content="Сохранить"
+                    Width="100"
+                    Height="20"
+                    Margin="10,0"
+                    Style="{StaticResource MainButton}"
+                    Click="SaveButton_Click"/>
+            <Button Content="Отмена"
+                    Width="100"
+                    Margin="10,0"
+                    Background="#BBA276"
+                    Foreground="White"
+                    Click="CancelButton_Click"/>
+        </StackPanel>
+    </Grid>
+</Window>

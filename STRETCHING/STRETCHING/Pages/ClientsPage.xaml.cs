@@ -27,12 +27,20 @@ namespace STRETCHING.Pages
         ObservableCollection<Clients> clientsColl { get; set; }
         public ClientsPage(Administrators admin)
         {
-            InitializeComponent();
-            _admin = admin;
-            db = new();
-            clientsColl = new();
-            LoadClients();
-            ClientsListBox.ItemsSource = clientsColl;
+            try
+            {
+                InitializeComponent();
+                _admin = admin;
+                db = new();
+                clientsColl = new();
+                LoadClients();
+                ClientsListBox.ItemsSource = clientsColl;
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
+           
         }
 
 
@@ -60,7 +68,7 @@ namespace STRETCHING.Pages
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.ToString(), "Ошибка");
+                Console.WriteLine(ex);
             }
         }
 

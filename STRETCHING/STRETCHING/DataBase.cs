@@ -12,7 +12,7 @@ namespace STRETCHING
 {
     public class DataBase
     {
-        MySqlConnection connection = new("user=root; password=1234; server=localhost; database=stretching");
+        MySqlConnection connection = new("user=root; password=123456789; server=localhost; database=stretching");
 
         public Administrators Authorize(string login, string password)
         {
@@ -119,6 +119,10 @@ namespace STRETCHING
             {
                 Console.WriteLine(ex);
             }
+            finally
+            {
+                connection.Close();
+            }
             
 
             return clientslst;
@@ -185,8 +189,18 @@ namespace STRETCHING
                 Console.WriteLine(ex);
             }
 
+            finally
+            {
+                connection.Close();
+            }
 
             return clientslst;
+        }
+
+
+        public void AddClient()
+        {
+
         }
 
 
