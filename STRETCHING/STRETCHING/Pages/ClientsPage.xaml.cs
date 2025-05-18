@@ -80,7 +80,24 @@ namespace STRETCHING.Pages
 
         private void AddClient_Click(object sender, RoutedEventArgs e)
         {
+            var addWin = new Windows.AddClient(_admin);
+            if(addWin.ShowDialog() == true)
+            {
+                clientsColl.Clear();
+                LoadClients();
+            }
+        }
 
+        private void ClientsListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (ClientsListBox.SelectedItem is Clients selectedClient)
+            {
+                // Переход на страницу клиента
+                NavigationService.Navigate(new ClientPage(selectedClient.IdClient));
+
+                // Сброс выделения
+                ClientsListBox.SelectedItem = null;
+            }
         }
 
         private void EditClient_Click(object sender, RoutedEventArgs e)

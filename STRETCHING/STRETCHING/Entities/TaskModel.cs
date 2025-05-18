@@ -1,0 +1,24 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Media;
+
+namespace STRETCHING.Entities
+{
+    public class TaskModel
+    {
+        public int TaskId { get; set; }
+        public string Title { get; set; }
+        public string Description { get; set; }
+        public DateTime TaskDate { get; set; }
+        public DateTime Deadline { get; set; }
+        public bool IsCompleted { get; set; }
+
+        public string StatusText => IsCompleted ? "Выполнено" : "Не выполнено";
+
+        public Brush StatusColor => IsCompleted ? Brushes.Gray : new SolidColorBrush((Color)ColorConverter.ConvertFromString("#2A503D"));
+    }
+
+}

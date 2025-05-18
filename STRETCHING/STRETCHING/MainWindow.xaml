@@ -32,17 +32,35 @@
                     Content="Клиенты"
                     Style="{StaticResource GreenRoundedButton}" />
                 <Button
+                    x:Name="tasksBtn"
                     Margin="10"
+                    Click="tasksBtn_Click"
                     Content="Задачи"
                     Style="{StaticResource GreenRoundedButton}" />
                 <Button
+                    x:Name="sheduleBtn"
                     Margin="10"
+                    Click="sheduleBtn_Click"
                     Content="Расписание"
                     Style="{StaticResource GreenRoundedButton}" />
                 <Button
+                    x:Name="borrowBtn"
                     Margin="10"
+                    Click="sheduleBtn_Click"
+                    Content="Бронирование залов"
+                    Style="{StaticResource GreenRoundedButton}" />
+                <Button
+                    x:Name="trainersBtn"
+                    Margin="10"
+                    Click="trainersBtn_Click"
                     Content="Тренеры"
                     Style="{StaticResource GreenRoundedButton}" />
+                <Button
+                    x:Name="adminBtn"
+                    Margin="10"
+                    Content="Администраторы"
+                    Style="{StaticResource GreenRoundedButton}"
+                    Visibility="Collapsed" />
             </StackPanel>
         </Grid>
 

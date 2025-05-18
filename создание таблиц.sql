@@ -26,8 +26,23 @@ CREATE TABLE trainers (
     first_name VARCHAR(50) NOT NULL,
     middle_name VARCHAR(50) NOT NULL,
     date_of_birth DATE NOT NULL,
-    work_features TEXT NOT NULL,
     INDEX idx_trainer_name (last_name, first_name)  -- Добавлен составной индекс
+);
+
+CREATE TABLE trainer_specializations (
+    specialization_id INT AUTO_INCREMENT PRIMARY KEY,
+    specname VARCHAR(100) NOT NULL,
+    description TEXT,
+    UNIQUE INDEX idx_specialization_name (specname)
+);
+
+-- Создание связующей таблицы "Тренер-Специализация"
+CREATE TABLE trainer_specialization_mapping (
+    trainer_id INT NOT NULL,
+    specialization_id INT NOT NULL,
+    PRIMARY KEY (trainer_id, specialization_id),
+    FOREIGN KEY (trainer_id) REFERENCES trainers(trainer_id),
+    FOREIGN KEY (specialization_id) REFERENCES trainer_specializations(specialization_id)
 );
 
 -- создание таблицы "Направления"
@@ -180,3 +195,81 @@ CREATE TABLE bookings (
     INDEX idx_booking_date (booking_date),  -- Индекс по дате записи
     INDEX idx_booking_hall (id_hall)  -- Индекс по залу
 );
+
+
+
+CREATE TABLE tasks (
+    task_id INT AUTO_INCREMENT PRIMARY KEY,
+    title text,
+    task_date DATE NOT NULL,
+    deadline date not null,
+    admin_id INT NOT NULL,
+    client_id INT,
+    description TEXT NOT NULL,
+    is_completed BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (admin_id) REFERENCES administrators(admin_id),
+    FOREIGN KEY (client_id) REFERENCES clients(id_client),
+    INDEX idx_task_date (task_date),
+    INDEX idx_task_admin (admin_id),
+    INDEX idx_task_status (is_completed)
+);
+
+
+/*DELIMITER //
+
+CREATE PROCEDURE GenerateDailyTasks()
+BEGIN
+    DECLARE today DATE;
+    SET today = CURDATE();
+
+    -- Перенос невыполненных задач на сегодня
+    INSERT INTO tasks (task_date, admin_id, client_id, description, is_completed)
+    SELECT 
+        today, admin_id, client_id, description, FALSE
+    FROM tasks
+    WHERE task_date < today AND is_completed = FALSE;
+
+    -- Уведомления об окончании абонементов через 7 дней
+    INSERT INTO tasks (task_date, admin_id, client_id, description, is_completed)
+    SELECT 
+        today, cs.assigned_admin, cs.client_id,
+        CONCAT('Позвонить клиенту: абонемент заканчивается ', cs.subscription_end_date),
+        FALSE
+    FROM client_subscriptions cs
+    WHERE DATEDIFF(cs.subscription_end_date, today) = 7;
+END //
+
+DELIMITER ;*/
+
+DELIMITER $$
+
+CREATE PROCEDURE GenerateTasksForAdmin(IN admin_id INT)
+BEGIN
+    INSERT INTO tasks (title, description, task_date, deadline, admin_id, client_id, is_completed)
+    SELECT 
+        'Напоминание о продлении абонемента',
+        CONCAT('Связаться с клиенткой ', c.last_name, ' ', c.first_name, ' ', c.middle_name,
+               ' по поводу продления абонемента, срок действия которого заканчивается ',
+               cs.subscription_end_date, '.'),
+        CURDATE(),
+        cs.subscription_end_date,
+        admin_id,
+        c.id_client,
+        FALSE
+    FROM client_subscriptions cs
+    JOIN clients c ON cs.client_id = c.id_client
+    WHERE cs.subscription_end_date = CURDATE() + INTERVAL 3 DAY
+      AND cs.assigned_admin = admin_id
+      AND NOT EXISTS (
+          SELECT 1
+          FROM tasks t
+          WHERE t.admin_id = admin_id
+            AND t.client_id = c.id_client
+            AND t.deadline = cs.subscription_end_date
+            AND t.title = 'Напоминание о продлении абонемента'
+      );
+END$$
+
+DELIMITER ;
+

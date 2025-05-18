@@ -28,8 +28,8 @@
                 UseLayoutRounding="True">
                 <TextBox
                     x:Name="SearchBox"
-                    VerticalAlignment="Center"
                     Width="250"
+                    VerticalAlignment="Center"
                     Style="{StaticResource SearchBox}"
                     TextChanged="SearchBox_TextChanged" />
             </Border>
@@ -59,22 +59,56 @@
             BorderBrush="#BBA276"
             BorderThickness="1"
             CornerRadius="8">
-            <ScrollViewer>
-                <ListBox x:Name="ClientsListBox" Margin="10">
+
+            <ScrollViewer Background="Transparent" BorderThickness="0">
+                <ListBox
+                    x:Name="ClientsListBox"
+                    Margin="10"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    SelectionChanged="ClientsListBox_SelectionChanged">
+
+                    <!--  Сброс стандартного стиля ListBoxItem  -->
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="ListBoxItem">
+                            <Setter Property="Background" Value="Transparent" />
+                            <Setter Property="BorderBrush" Value="Transparent" />
+                            <Setter Property="BorderThickness" Value="0" />
+                            <Setter Property="Padding" Value="0" />
+                            <Setter Property="Margin" Value="0" />
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                            <Setter Property="VerticalContentAlignment" Value="Top" />
+                            <Setter Property="Focusable" Value="False" />
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+
+                    <!--  Шаблон элемента  -->
                     <ListBox.ItemTemplate>
                         <DataTemplate>
-                            <StackPanel Margin="5">
-                                <TextBlock FontSize="14" Text="{Binding FullName}" />
-                                <TextBlock
-                                    FontSize="12"
-                                    Foreground="Gray"
-                                    Text="{Binding RoleName}" />
-                            </StackPanel>
-
+                            <Border
+                                Margin="0,0,0,10"
+                                Padding="10"
+                                Background="White"
+                                BorderBrush="#E0E0E0"
+                                BorderThickness="1"
+                                CornerRadius="6">
+                                <StackPanel>
+                                    <TextBlock
+                                        FontSize="14"
+                                        FontWeight="SemiBold"
+                                        Text="{Binding FullName}" />
+                                    <TextBlock
+                                        FontSize="12"
+                                        Foreground="Gray"
+                                        Text="{Binding RoleName}" />
+                                </StackPanel>
+                            </Border>
                         </DataTemplate>
                     </ListBox.ItemTemplate>
                 </ListBox>
             </ScrollViewer>
         </Border>
+
+
     </Grid>
 </Page>

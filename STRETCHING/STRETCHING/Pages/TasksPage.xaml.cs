@@ -18,40 +18,35 @@ using System.Windows.Shapes;
 namespace STRETCHING.Pages
 {
     /// <summary>
-    /// Логика взаимодействия для MainPage.xaml
+    /// Логика взаимодействия для TasksPage.xaml
     /// </summary>
-    public partial class MainPage : Page
+    public partial class TasksPage : Page
     {
-        Administrators _admin;
+        Administrators _currentAdmin;
+        private ObservableCollection<TaskItem> Tasks;
         DataBase db;
-        public ObservableCollection<TaskModel> Tasks { get; set; }
-        public MainPage(Administrators admin)
+        public TasksPage(Administrators administrators)
         {
             InitializeComponent();
-            _admin = admin;
+            _currentAdmin = administrators;
             db = new();
-            Tasks = new();
+            db.GenerateTasksForAdmin(_currentAdmin.Id);
             LoadTasks();
-            LoadTodaySchedule();
         }
 
 
         private void LoadTasks()
         {
-            Tasks.Clear();
-            var taskList = db.GetTasksForAdminMain(_admin.Id);
-
-            foreach (var task in taskList)
-            {
-                Tasks.Add(task);
-            }
+            Tasks = db.GetTasksForAdmin(_currentAdmin.Id);
             TasksList.ItemsSource = Tasks;
         }
 
-        private void LoadTodaySchedule()
+        private void CheckBox_CheckedChanged(object sender, RoutedEventArgs e)
         {
-            var todaySchedule = db.GetTodaySchedule();
-            ScheduleList.ItemsSource = todaySchedule;
+            if (sender is CheckBox checkBox && checkBox.DataContext is TaskItem task)
+            {
+                db.UpdateTaskCompletion(task.Id, checkBox.IsChecked == true);
+            }
         }
 
     }

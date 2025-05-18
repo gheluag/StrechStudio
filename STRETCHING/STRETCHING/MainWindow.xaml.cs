@@ -22,6 +22,7 @@ namespace STRETCHING
         {
             InitializeComponent();
             _currentAdmin = administrators;
+            if (_currentAdmin.Role == 2) adminBtn.Visibility = Visibility.Visible;
             mainFrame.Navigate(new Pages.MainPage(_currentAdmin));
         }
 
@@ -33,6 +34,21 @@ namespace STRETCHING
         private void mainBtn_Click(object sender, RoutedEventArgs e)
         {
             mainFrame.Navigate(new Pages.MainPage(_currentAdmin));
+        }
+
+        private void tasksBtn_Click(object sender, RoutedEventArgs e)
+        {
+            mainFrame.Navigate(new Pages.TasksPage(_currentAdmin));
+        }
+
+        private void sheduleBtn_Click(object sender, RoutedEventArgs e)
+        {
+            mainFrame.Navigate(new Pages.SchedulePage());
+        }
+
+        private void trainersBtn_Click(object sender, RoutedEventArgs e)
+        {
+            mainFrame.Navigate(new Pages.TrainersPage());
         }
     }
 }

@@ -1,0 +1,82 @@
+﻿<Window x:Class="STRETCHING.Windows.AddClassWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:STRETCHING.Windows"
+        mc:Ignorable="d"
+        Title="Добавить занятие" Height="470" Width="400"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="NoResize">
+    <Border BorderBrush="#BBA276" BorderThickness="1" CornerRadius="8" Padding="20">
+        <StackPanel>
+            <TextBlock Text="Добавить новое занятие" 
+                       FontSize="20" 
+                       FontWeight="Bold" 
+                       Foreground="#2A503D"
+                       Margin="0 0 0 15"/>
+
+            <!-- Дата занятия -->
+            <TextBlock Text="Дата занятия:" Margin="0 5" Foreground="#2A503D"/>
+            <DatePicker x:Name="ClassDatePicker" 
+                        SelectedDateFormat="Short"
+                        BorderBrush="#BBA276"
+                        BorderThickness="1"/>
+
+            <!-- Время начала -->
+            <TextBlock Text="Время начала:" Margin="0 10 0 5" Foreground="#2A503D"/>
+            <ComboBox x:Name="StartTimeComboBox" 
+                      ItemsSource="{Binding AvailableTimes}"
+                      DisplayMemberPath="Display"
+                      SelectedValuePath="Value"
+                      BorderBrush="#BBA276"
+                      BorderThickness="1"/>
+
+            <!-- Время окончания -->
+            <TextBlock Text="Время окончания:" Margin="0 10 0 5" Foreground="#2A503D"/>
+            <ComboBox x:Name="EndTimeComboBox" 
+                      ItemsSource="{Binding AvailableTimes}"
+                      DisplayMemberPath="Display"
+                      SelectedValuePath="Value"
+                      BorderBrush="#BBA276"
+                      BorderThickness="1"/>
+
+            <!-- Направление -->
+            <TextBlock Text="Направление:" Margin="0 10 0 5" Foreground="#2A503D"/>
+            <ComboBox x:Name="DirectionComboBox" 
+                      DisplayMemberPath="name_d"
+                      SelectedValuePath="direction_id"
+                      BorderBrush="#BBA276"
+                      BorderThickness="1"/>
+
+            <!-- Тренер -->
+            <TextBlock Text="Тренер:" Margin="0 10 0 5" Foreground="#2A503D"/>
+            <ComboBox x:Name="TrainerComboBox" 
+                      DisplayMemberPath="FullName"
+                      SelectedValuePath="trainer_id"
+                      BorderBrush="#BBA276"
+                      BorderThickness="1"/>
+
+            <!-- Зал -->
+            <TextBlock Text="Зал:" Margin="0 10 0 5" Foreground="#2A503D"/>
+            <ComboBox x:Name="HallComboBox" 
+                      DisplayMemberPath="name_hall"
+                      SelectedValuePath="id_hall"
+                      BorderBrush="#BBA276"
+                      BorderThickness="1"/>
+
+            <!-- Кнопки -->
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0 20 0 0">
+                <Button Content="Отмена" 
+                        Width="100" 
+                        Margin="0 0 10 0"
+                        Style="{StaticResource CancelButtonStyle}"
+                        Click="CancelButton_Click"/>
+                <Button Content="Добавить" 
+                        Width="100"
+                        Style="{StaticResource PrimaryButtonStyle}"
+                        Click="AddButton_Click"/>
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</Window>
