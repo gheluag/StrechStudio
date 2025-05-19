@@ -9,38 +9,202 @@
     Style="{StaticResource pageStyle}"
     mc:Ignorable="d">
 
-    <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
-        <Grid Margin="20">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="700" />
-            </Grid.RowDefinitions>
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
 
-            <!--  Заголовок  -->
-            <TextBlock
-                Margin="0,0,0,10"
-                HorizontalAlignment="Center"
-                FontSize="24"
-                FontWeight="Bold"
-                Foreground="#2A503D"
-                Text="Расписание занятий" />
-            <Button
-                Grid.Row="0"
-                Width="150"
-                Height="30"
-                Margin="0,0,0,10"
-                HorizontalAlignment="Right"
-                Click="AddClassButton_Click"
-                Content="Добавить занятие"
-                Style="{StaticResource MainButton}" />
+        <!-- Заголовок -->
+        <TextBlock Grid.Row="0" Text="Расписание занятий" 
+                   FontSize="24" 
+                   FontWeight="Bold" 
+                   Foreground="#2A503D"
+                   HorizontalAlignment="Center"
+                   Margin="0,0,0,20"/>
 
-            <!--  Сетка с днями недели и занятиями  -->
-            <Grid x:Name="ScheduleGrid" Grid.Row="1">
-                <!--  Заполнение из кода  -->
-            </Grid>
-        </Grid>
-    </ScrollViewer>
+        <!-- Панель управления -->
+        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,0,20">
+            <Button x:Name="AddClassButton" Content="Добавить занятие" 
+                    Style="{StaticResource MainButton}"
+                    Width="150" Height="35" Margin="0,0,10,0" Click="AddClassButton_Click"/>
+            <Button x:Name="RefreshButton" Content="Обновить" 
+                    Style="{StaticResource SecondaryButton}"
+                    Visibility="Collapsed"
+                    Width="100" Height="35" Click="RefreshButton_Click"/>
+        </StackPanel>
 
+        <!-- Таблица расписания -->
+        <Border Grid.Row="2" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="6"
+                Height="600"
+                VerticalAlignment="Top">
+            <DataGrid x:Name="ScheduleDataGrid"
+                      AutoGenerateColumns="False"
+                      HeadersVisibility="Column"
+                      RowHeaderWidth="0"
+                      Background="White"
+                      HorizontalAlignment="Left"
+                      BorderThickness="0"
+                      IsReadOnly="True"
+                      SelectionMode="Single"
+                      SelectionUnit="FullRow">
+
+                <DataGrid.Columns>
+                    <!-- Дата -->
+                    <DataGridTextColumn Header="Дата" Width="150" Binding="{Binding ClassDate, StringFormat='{}{0:dd.MM.yyyy}'}">
+                        <DataGridTextColumn.HeaderStyle>
+                            <Style TargetType="DataGridColumnHeader">
+                                <Setter Property="Background" Value="#2A503D"/>
+                                <Setter Property="Foreground" Value="White"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                                <Setter Property="Padding" Value="10,5"/>
+                            </Style>
+                        </DataGridTextColumn.HeaderStyle>
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Padding" Value="10,5"/>
+                                <Setter Property="VerticalAlignment" Value="Center"/>
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+
+                    <!-- Время -->
+                    <DataGridTextColumn Header="Время" Width="150" Binding="{Binding TimeRange}">
+                        <DataGridTextColumn.HeaderStyle>
+                            <Style TargetType="DataGridColumnHeader">
+                                <Setter Property="Background" Value="#2A503D"/>
+                                <Setter Property="Foreground" Value="White"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                                <Setter Property="Padding" Value="10,5"/>
+                            </Style>
+                        </DataGridTextColumn.HeaderStyle>
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Padding" Value="10,5"/>
+                                <Setter Property="VerticalAlignment" Value="Center"/>
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+
+                    <!-- Направление -->
+                    <DataGridTextColumn Header="Направление" Width="200" Binding="{Binding DirectionName}">
+                        <DataGridTextColumn.HeaderStyle>
+                            <Style TargetType="DataGridColumnHeader">
+                                <Setter Property="Background" Value="#2A503D"/>
+                                <Setter Property="Foreground" Value="White"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                                <Setter Property="Padding" Value="10,5"/>
+                            </Style>
+                        </DataGridTextColumn.HeaderStyle>
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Padding" Value="10,5"/>
+                                <Setter Property="VerticalAlignment" Value="Center"/>
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+
+                    <!-- Тренер -->
+                    <DataGridTextColumn Header="Тренер" Width="250" Binding="{Binding TrainerFullName}">
+                        <DataGridTextColumn.HeaderStyle>
+                            <Style TargetType="DataGridColumnHeader">
+                                <Setter Property="Background" Value="#2A503D"/>
+                                <Setter Property="Foreground" Value="White"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                                <Setter Property="Padding" Value="10,5"/>
+                            </Style>
+                        </DataGridTextColumn.HeaderStyle>
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Padding" Value="10,5"/>
+                                <Setter Property="VerticalAlignment" Value="Center"/>
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+
+                    <!-- Зал -->
+                    <DataGridTextColumn Header="Зал" Width="120" Binding="{Binding HallName}">
+                        <DataGridTextColumn.HeaderStyle>
+                            <Style TargetType="DataGridColumnHeader">
+                                <Setter Property="Background" Value="#2A503D"/>
+                                <Setter Property="Foreground" Value="White"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                                <Setter Property="Padding" Value="10,5"/>
+                            </Style>
+                        </DataGridTextColumn.HeaderStyle>
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Padding" Value="10,5"/>
+                                <Setter Property="VerticalAlignment" Value="Center"/>
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+
+                    <!-- Записалось -->
+                    <DataGridTextColumn Header="Записалось" Width="100" Binding="{Binding BookedClientsCount}">
+                        <DataGridTextColumn.HeaderStyle>
+                            <Style TargetType="DataGridColumnHeader">
+                                <Setter Property="Background" Value="#2A503D"/>
+                                <Setter Property="Foreground" Value="White"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                                <Setter Property="Padding" Value="10,5"/>
+                            </Style>
+                        </DataGridTextColumn.HeaderStyle>
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Padding" Value="10,5"/>
+                                <Setter Property="TextAlignment" Value="Center"/>
+                                <Setter Property="VerticalAlignment" Value="Center"/>
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+
+                    <!-- Действия -->
+                    <DataGridTemplateColumn Header="Действия" Width="125">
+                        <DataGridTemplateColumn.HeaderStyle>
+                            <Style TargetType="DataGridColumnHeader">
+                                <Setter Property="Background" Value="#2A503D"/>
+                                <Setter Property="Foreground" Value="White"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                                <Setter Property="Padding" Value="10,5"/>
+                            </Style>
+                        </DataGridTemplateColumn.HeaderStyle>
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                    <Button Content="✏️" ToolTip="Редактировать" 
+                                            Style="{StaticResource IconButton}"
+                                            Click="EditClassButton_Click"/>
+                                    <Button Content="🗑️" ToolTip="Удалить" 
+                                            Style="{StaticResource IconButton}"
+                                            Margin="5,0,0,0"
+                                            Click="DeleteClassButton_Click"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+
+                <DataGrid.RowStyle>
+                    <Style TargetType="DataGridRow">
+                        <Setter Property="BorderBrush" Value="#E0E0E0"/>
+                        <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#F5F5F5"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter Property="Background" Value="#E8F5E9"/>
+                                <Setter Property="BorderBrush" Value="#BBA276"/>
+                                <Setter Property="BorderThickness" Value="1"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </DataGrid.RowStyle>
+            </DataGrid>
+        </Border>
+    </Grid>
 
 
 </Page>

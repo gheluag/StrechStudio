@@ -29,9 +29,6 @@ namespace STRETCHING.Windows
         private void Login()
         {
 
-            LoginTextBox.Text = "vorob1e";
-            PasswordBox.Password = "y1t55";
-
             string login = LoginTextBox.Text;
             string password = PasswordBox.Password;
 

@@ -1,0 +1,89 @@
+﻿<Window
+    x:Class="STRETCHING.Windows.EditTaskWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:STRETCHING.Windows"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Title="Редактировать задачу"
+    Width="400"
+    Height="450"
+    Icon="/Resources/logo.png"
+    WindowStartupLocation="CenterScreen"
+    mc:Ignorable="d">
+
+    <Grid Margin="15">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="30" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <TextBlock
+            Grid.Row="0"
+            FontSize="20"
+            FontWeight="Bold"
+            Foreground="#2A503D"
+            Text="Редактирование задачи" />
+
+        <TextBlock
+            Grid.Row="1"
+            Margin="0,10,0,5"
+            Foreground="#2A503D"
+            Text="Заголовок:" />
+        <TextBox
+            x:Name="TitleTextBox"
+            Grid.Row="2"
+            Margin="0,0,0,10"
+            Text="{Binding Title}" />
+
+        <TextBlock
+            Grid.Row="3"
+            Margin="0,0,0,5"
+            Foreground="#2A503D"
+            Text="Описание:" />
+        <TextBox
+            x:Name="DescriptionTextBox"
+            Grid.Row="4"
+            Height="100"
+            Margin="0,0,0,10"
+            AcceptsReturn="True"
+            Text="{Binding Description}"
+            TextWrapping="Wrap" />
+
+        <TextBlock
+            Grid.Row="5"
+            Margin="0,0,0,5"
+            Foreground="#2A503D"
+            Text="Срок выполнения:" />
+        <DatePicker
+            x:Name="DeadlineDatePicker"
+            Grid.Row="6"
+            Margin="0,0,0,20"
+            SelectedDate="{Binding Deadline}" />
+
+        <StackPanel
+            Grid.Row="7"
+            HorizontalAlignment="Right"
+            Orientation="Horizontal">
+            <Button
+                x:Name="SaveButton"
+                Width="100"
+                Margin="0,0,10,0"
+                Click="SaveButton_Click"
+                Content="Сохранить"
+                Style="{StaticResource MainButton}" />
+            <Button
+                x:Name="CancelButton"
+                Width="100"
+                Click="CancelButton_Click"
+                Content="Отмена"
+                Style="{StaticResource SecondaryButton}" />
+        </StackPanel>
+    </Grid>
+</Window>

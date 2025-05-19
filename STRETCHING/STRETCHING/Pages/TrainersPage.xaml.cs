@@ -30,66 +30,42 @@ namespace STRETCHING.Pages
 
         private void LoadTrainers()
         {
-            // Очищаем текущий источник данных
-            TrainersListBox.ItemsSource = null;
+            try
+            {
+                string searchText = SearchBox.Text?.ToLower() ?? "";
+                List<Trainer> trainers;
 
-            // Загружаем свежие данные
-            var trainers = db.GetAllTrainers();
-            TrainersListBox.ItemsSource = trainers;
+                if (string.IsNullOrWhiteSpace(searchText))
+                {
+                    trainers = db.GetAllTrainers();
+                }
+                else
+                {
+                    trainers = db.GetSearchTrainers(searchText);
+                }
 
-            // Принудительное обновление UI
-            TrainersListBox.Items.Refresh();
+                TrainersListBox.ItemsSource = trainers;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка при загрузке тренеров: {ex.Message}", "Ошибка",
+                              MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
+
 
         private void AddTrainerButton_Click(object sender, RoutedEventArgs e)
         {
             var addTrainerWindow = new Windows.AddTrainerWindow();
             if (addTrainerWindow.ShowDialog() == true)
             {
-                if (db.AddTrainer(addTrainerWindow.Trainer) > 0)
-                {
-                    MessageBox.Show("Тренер успешно добавлен", "Успех",
-                                  MessageBoxButton.OK, MessageBoxImage.Information);
-                    LoadTrainers();
-                }
-                else
-                {
-                    MessageBox.Show("Не удалось добавить тренера", "Ошибка",
-                                  MessageBoxButton.OK, MessageBoxImage.Error);
-                }
+                LoadTrainers();
+                
             }
         }
 
-        
 
-        private void EditTrainerButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is Button button && button.DataContext is Trainer trainer)
-            {
-                EditTrainer(trainer);
-            }
-        }
 
-     
-
-        private void EditTrainer(Trainer trainer)
-        {
-            var editTrainerWindow = new Windows.AddTrainerWindow(trainer);
-            if (editTrainerWindow.ShowDialog() == true)
-            {
-                if (db.UpdateTrainer(editTrainerWindow.Trainer))
-                {
-                    MessageBox.Show("Данные тренера успешно обновлены", "Успех",
-                                  MessageBoxButton.OK, MessageBoxImage.Information);
-                    LoadTrainers();
-                }
-                else
-                {
-                    MessageBox.Show("Не удалось обновить данные тренера", "Ошибка",
-                                  MessageBoxButton.OK, MessageBoxImage.Error);
-                }
-            }
-        }
 
         private void DeleteTrainerButton_Click(object sender, RoutedEventArgs e)
         {
@@ -124,6 +100,11 @@ namespace STRETCHING.Pages
         }
 
         private void RefreshButton_Click(object sender, RoutedEventArgs e)
+        {
+            LoadTrainers();
+        }
+
+        private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             LoadTrainers();
         }

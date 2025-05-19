@@ -50,5 +50,10 @@ namespace STRETCHING
         {
             mainFrame.Navigate(new Pages.TrainersPage());
         }
+
+        private void adminBtn_Click(object sender, RoutedEventArgs e)
+        {
+            mainFrame.Navigate(new Pages.AdminsPage());
+        }
     }
 }

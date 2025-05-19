@@ -10,6 +10,7 @@
     Width="450"
     Height="600"
     Background="#FFF9F9F9"
+    Icon="/Resources/logo.png"
     ResizeMode="NoResize"
     WindowStartupLocation="CenterScreen"
     mc:Ignorable="d">
@@ -49,8 +50,8 @@
                         UseLayoutRounding="True">
                         <TextBox
                             x:Name="LastNameBox"
-                            PreviewTextInput="Name_PreviewTextInput"
                             BorderBrush="Transparent"
+                            PreviewTextInput="Name_PreviewTextInput"
                             Style="{StaticResource borderTb}" />
                     </Border>
 
@@ -63,8 +64,8 @@
                         UseLayoutRounding="True">
                         <TextBox
                             x:Name="FirstNameBox"
-                            PreviewTextInput="Name_PreviewTextInput"
                             BorderBrush="Transparent"
+                            PreviewTextInput="Name_PreviewTextInput"
                             Style="{StaticResource borderTb}" />
                     </Border>
 
@@ -78,8 +79,8 @@
                         UseLayoutRounding="True">
                         <TextBox
                             x:Name="MiddleNameBox"
-                            PreviewTextInput="Name_PreviewTextInput"
                             BorderBrush="Transparent"
+                            PreviewTextInput="Name_PreviewTextInput"
                             Style="{StaticResource borderTb}" />
                     </Border>
 
@@ -123,8 +124,8 @@
                             UseLayoutRounding="True">
                             <TextBox
                                 x:Name="PhoneBox"
-                                PreviewTextInput="PhoneBox_PreviewTextInput"
                                 BorderBrush="Transparent"
+                                PreviewTextInput="PhoneBox_PreviewTextInput"
                                 Style="{StaticResource borderTb}" />
                         </Border>
 

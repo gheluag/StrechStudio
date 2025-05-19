@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -86,12 +87,12 @@ namespace STRETCHING
             string query = "SELECT c.id_client, c.last_name, c.first_name, c.middle_name, " +
                 "c.phone_number, c.email, " +
                 "c.date_of_birth, " +
-                "rc.name_role AS role_name, " + 
+                "rc.name_role AS role_name, " +
                 "s.subscription_name, " +
                 "c.health_conditions, " +
                 "cs.subscription_start_date, " +
                 "cs.subscription_end_date, " +
-                "c.name_role AS role_id " + 
+                "c.name_role AS role_id " +
                 "FROM client_subscriptions cs " +
                 "JOIN clients c ON cs.client_id = c.id_client " +
                 "JOIN subscriptions s ON cs.subscription_id = s.subscription_id " +
@@ -122,8 +123,8 @@ namespace STRETCHING
                             HealthConditions = reader.IsDBNull(reader.GetOrdinal("health_conditions"))
                                 ? null
                                 : reader.GetString("health_conditions"),
-                            RoleId = reader.GetInt32("role_id"), 
-                            RoleName = reader.GetString("role_name") 
+                            RoleId = reader.GetInt32("role_id"),
+                            RoleName = reader.GetString("role_name")
                         };
 
                         clientslst.Add(client);
@@ -138,7 +139,7 @@ namespace STRETCHING
             {
                 connection.Close();
             }
-            
+
 
             return clientslst;
         }
@@ -238,7 +239,7 @@ namespace STRETCHING
                     });
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Console.WriteLine(ex);
             }
@@ -246,7 +247,7 @@ namespace STRETCHING
             {
                 connection.Close();
             }
-            
+
 
 
             return tasks;
@@ -297,7 +298,7 @@ namespace STRETCHING
                 connection.Close();
             }
 
-           
+
         }
 
 
@@ -349,7 +350,73 @@ namespace STRETCHING
             return tasks;
         }
 
+        public bool AddTask(TaskModel task)
+        {
+            try
+            {
+                OpenConnection();
+                string query = @"
+        INSERT INTO tasks 
+            (title, description, task_date, deadline, admin_id, client_id, is_completed) 
+        VALUES 
+            (@title, @description, @taskDate, @deadline, @adminId, @clientId, @isCompleted)";
 
+                MySqlCommand cmd = new MySqlCommand(query, GetConnection());
+                cmd.Parameters.AddWithValue("@title", task.Title);
+                cmd.Parameters.AddWithValue("@description", task.Description);
+                cmd.Parameters.AddWithValue("@taskDate", DateTime.Today);
+                cmd.Parameters.AddWithValue("@deadline", task.Deadline);
+                cmd.Parameters.AddWithValue("@adminId", task.AdminId);
+                cmd.Parameters.AddWithValue("@clientId", task.ClientId.HasValue ? (object)task.ClientId.Value : DBNull.Value);
+                cmd.Parameters.AddWithValue("@isCompleted", task.IsCompleted);
+
+                return cmd.ExecuteNonQuery() > 0;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Ошибка при добавлении задачи: {ex.Message}");
+                return false;
+            }
+            finally
+            {
+                CloseConnection();
+            }
+        }
+
+        public bool UpdateTask(TaskModel task)
+        {
+            try
+            {
+                OpenConnection();
+                string query = @"
+        UPDATE tasks 
+        SET 
+            title = @title,
+            description = @description,
+            deadline = @deadline,
+            is_completed = @isCompleted
+        WHERE 
+            task_id = @taskId";
+
+                MySqlCommand cmd = new MySqlCommand(query, GetConnection());
+                cmd.Parameters.AddWithValue("@title", task.Title);
+                cmd.Parameters.AddWithValue("@description", task.Description);
+                cmd.Parameters.AddWithValue("@deadline", task.Deadline);
+                cmd.Parameters.AddWithValue("@isCompleted", task.IsCompleted);
+                cmd.Parameters.AddWithValue("@taskId", task.TaskId);
+
+                return cmd.ExecuteNonQuery() > 0;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Ошибка при обновлении задачи: {ex.Message}");
+                return false;
+            }
+            finally
+            {
+                CloseConnection();
+            }
+        }
 
         public List<ScheduleItem> GetTodaySchedule()
         {
@@ -507,126 +574,150 @@ namespace STRETCHING
             return trainers;
         }
 
-        public int AddTrainer(Trainer trainer)
-        {
-            string query = @"INSERT INTO trainers 
-                    (last_name, first_name, middle_name, date_of_birth) 
-                    VALUES 
-                    (@lastName, @firstName, @middleName, @dateOfBirth);
-                    SELECT LAST_INSERT_ID();";
 
-            MySqlTransaction transaction = null;
+        public List<Trainer> GetSearchTrainers(string searchText)
+        {
+            List<Trainer> trainers = new List<Trainer>();
 
             try
             {
                 OpenConnection();
-                transaction = GetConnection().BeginTransaction();
+                string query = @"
+            SELECT t.trainer_id, t.last_name, t.first_name, t.middle_name, t.date_of_birth,
+                   GROUP_CONCAT(ts.specname SEPARATOR ', ') as specializations
+            FROM trainers t
+            LEFT JOIN trainer_specialization_mapping tsm ON t.trainer_id = tsm.trainer_id
+            LEFT JOIN trainer_specializations ts ON tsm.specialization_id = ts.specialization_id
+            WHERE CONCAT(t.last_name, ' ', t.first_name, ' ', t.middle_name) LIKE CONCAT('%', @search, '%') OR
+                  ts.specname LIKE CONCAT('%', @search, '%')
+            GROUP BY t.trainer_id";
 
-                var cmd = new MySqlCommand(query, GetConnection(), transaction);
-                cmd.Parameters.AddWithValue("@lastName", trainer.LastName);
-                cmd.Parameters.AddWithValue("@firstName", trainer.FirstName);
-                cmd.Parameters.AddWithValue("@middleName", trainer.MiddleName);
-                cmd.Parameters.AddWithValue("@dateOfBirth", trainer.DateOfBirth);
+                MySqlCommand cmd = new MySqlCommand(query, GetConnection());
+                // Правильный способ добавления параметра для LIKE
+                cmd.Parameters.AddWithValue("@search", searchText);
 
-                int trainerId = Convert.ToInt32(cmd.ExecuteScalar());
-
-                // Добавляем специализации
-                if (trainer.SpecializationIds != null && trainer.SpecializationIds.Any())
+                using (MySqlDataReader reader = cmd.ExecuteReader())
                 {
-                    AddTrainerSpecializations(trainerId, trainer.SpecializationIds, transaction); // Передаем transaction
+                    while (reader.Read())
+                    {
+                        trainers.Add(new Trainer
+                        {
+                            TrainerId = reader.GetInt32("trainer_id"),
+                            LastName = reader.GetString("last_name"),
+                            FirstName = reader.GetString("first_name"),
+                            MiddleName = reader.GetString("middle_name"),
+                            DateOfBirth = reader.GetDateTime("date_of_birth"),
+                            SpecializationNames = reader.IsDBNull(reader.GetOrdinal("specializations")) ?
+                                              "Нет специализаций" : reader.GetString("specializations")
+                        });
+                    }
                 }
-
-                transaction.Commit();
-                return trainerId;
             }
             catch (Exception ex)
             {
-                transaction?.Rollback();
-                Console.WriteLine(ex);
-                return -1;
+                MessageBox.Show($"Ошибка при поиске тренеров: {ex.Message}");
             }
             finally
             {
                 CloseConnection();
             }
+
+            return trainers;
         }
 
-        private void AddTrainerSpecializations(int trainerId, List<int> specializationIds, MySqlTransaction transaction)
+        public List<ClassScheduleItem> GetClassSchedule()
         {
-            string query = "INSERT INTO trainer_specialization_mapping (trainer_id, specialization_id) VALUES ";
-
-            var values = new List<string>();
-            foreach (var id in specializationIds)
-            {
-                values.Add($"({trainerId}, {id})");
-            }
-
-            query += string.Join(",", values);
+            List<ClassScheduleItem> schedule = new List<ClassScheduleItem>();
 
             try
             {
-                var cmd = new MySqlCommand(query, GetConnection(), transaction);
-                cmd.ExecuteNonQuery();
+                OpenConnection();
+                string query = @"
+        SELECT 
+            c.class_id,
+            c.class_date,
+            c.start_time,
+            c.end_time,
+            d.name_d AS direction_name,
+            CONCAT(t.last_name, ' ', t.first_name, ' ', t.middle_name) AS trainer_full_name,
+            h.name_hall AS hall_name,
+            COUNT(b.booking_id) AS booked_clients_count
+        FROM 
+            classes c
+        JOIN 
+            directions d ON c.direction_id = d.direction_id
+        JOIN 
+            trainers t ON c.trainer_id = t.trainer_id
+        LEFT JOIN 
+            bookings b ON c.class_id = b.class_id
+        JOIN
+            halls h ON b.id_hall = h.id_hall
+        GROUP BY 
+            c.class_id, c.class_date, c.start_time, c.end_time, 
+            d.name_d, t.last_name, t.first_name, t.middle_name, h.name_hall
+        ORDER BY 
+            c.class_date, c.start_time";
+
+                MySqlCommand cmd = new MySqlCommand(query, GetConnection());
+
+                using (MySqlDataReader reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        schedule.Add(new ClassScheduleItem
+                        {
+                            ClassId = reader.GetInt32("class_id"),
+                            ClassDate = reader.GetDateTime("class_date"),
+                            StartTime = reader.GetTimeSpan("start_time"),
+                            EndTime = reader.GetTimeSpan("end_time"),
+                            DirectionName = reader.GetString("direction_name"),
+                            TrainerFullName = reader.GetString("trainer_full_name"),
+                            HallName = reader.GetString("hall_name"),
+                            BookedClientsCount = reader.GetInt32("booked_clients_count")
+                        });
+                    }
+                }
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex);
-                throw;
+                Console.WriteLine($"Ошибка при загрузке расписания: {ex.Message}");
             }
+            finally
+            {
+                CloseConnection();
+            }
+
+            return schedule;
         }
 
-        // Обновление данных тренера
-        public bool UpdateTrainer(Trainer trainer)
+        public bool DeleteClass(int classId)
         {
             MySqlTransaction transaction = null;
+
             try
             {
                 OpenConnection();
                 transaction = GetConnection().BeginTransaction();
 
-                Console.WriteLine($"Updating trainer {trainer.TrainerId}");
-                Console.WriteLine($"Specializations: {string.Join(",", trainer.SpecializationIds ?? new List<int>())}");
-
-                // 1. Обновляем основные данные тренера
-                string updateQuery = @"UPDATE trainers SET 
-                             last_name = @lastName, 
-                             first_name = @firstName, 
-                             middle_name = @middleName, 
-                             date_of_birth = @dateOfBirth 
-                             WHERE trainer_id = @trainerId";
-
-                var cmd = new MySqlCommand(updateQuery, GetConnection(), transaction);
-                cmd.Parameters.AddWithValue("@lastName", trainer.LastName);
-                cmd.Parameters.AddWithValue("@firstName", trainer.FirstName);
-                cmd.Parameters.AddWithValue("@middleName", trainer.MiddleName);
-                cmd.Parameters.AddWithValue("@dateOfBirth", trainer.DateOfBirth);
-                cmd.Parameters.AddWithValue("@trainerId", trainer.TrainerId);
+                // Сначала удаляем записи на это занятие
+                var cmd = new MySqlCommand("DELETE FROM bookings WHERE class_id = @classId",
+                                          GetConnection(), transaction);
+                cmd.Parameters.AddWithValue("@classId", classId);
                 cmd.ExecuteNonQuery();
 
-                // 2. Удаляем все существующие специализации тренера
-                string deleteQuery = "DELETE FROM trainer_specialization_mapping WHERE trainer_id = @trainerId";
-                cmd = new MySqlCommand(deleteQuery, GetConnection(), transaction);
-                cmd.Parameters.AddWithValue("@trainerId", trainer.TrainerId);
-                cmd.ExecuteNonQuery();
-
-                // 3. Добавляем новые специализации
-                if (trainer.SpecializationIds != null && trainer.SpecializationIds.Any())
-                {
-                    string insertQuery = "INSERT INTO trainer_specialization_mapping (trainer_id, specialization_id) VALUES ";
-                    var values = trainer.SpecializationIds.Select(id => $"({trainer.TrainerId}, {id})");
-                    insertQuery += string.Join(",", values);
-
-                    cmd = new MySqlCommand(insertQuery, GetConnection(), transaction);
-                    cmd.ExecuteNonQuery();
-                }
+                // Затем удаляем само занятие
+                cmd = new MySqlCommand("DELETE FROM classes WHERE class_id = @classId",
+                                     GetConnection(), transaction);
+                cmd.Parameters.AddWithValue("@classId", classId);
+                int affectedRows = cmd.ExecuteNonQuery();
 
                 transaction.Commit();
-                return true;
+                return affectedRows > 0;
             }
             catch (Exception ex)
             {
                 transaction?.Rollback();
-                Console.WriteLine($"Ошибка при обновлении тренера: {ex.Message}");
+                Console.WriteLine(ex);
                 return false;
             }
             finally
@@ -672,8 +763,357 @@ namespace STRETCHING
             }
         }
 
+        public List<TrainerSpecialization> GetSpecializations()
+        {
+            List<TrainerSpecialization> specializations = new List<TrainerSpecialization>();
+
+            try
+            {
+                OpenConnection();
+                string query = "SELECT specialization_id, specname, description FROM trainer_specializations";
+                MySqlCommand cmd = new MySqlCommand(query, GetConnection());
+
+                using (MySqlDataReader reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        specializations.Add(new TrainerSpecialization
+                        {
+                            SpecializationId = reader.GetInt32("specialization_id"),
+                            Name = reader.GetString("specname"),
+                            Description = reader.IsDBNull(reader.GetOrdinal("description")) ?
+                                          string.Empty : reader.GetString("description")
+                        });
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка при загрузке специализаций: {ex.Message}");
+            }
+            finally
+            {
+                CloseConnection();
+            }
+
+            return specializations;
+        }
+
+        public int AddTrainer(Trainer trainer)
+        {
+            int trainerId = -1;
+            MySqlTransaction transaction = null;
+
+            try
+            {
+                OpenConnection();
+                transaction = GetConnection().BeginTransaction();
+
+                // Добавляем тренера
+                string query = @"INSERT INTO trainers 
+                               (last_name, first_name, middle_name, date_of_birth) 
+                               VALUES (@lastName, @firstName, @middleName, @dateOfBirth);
+                               SELECT LAST_INSERT_ID();";
+
+                MySqlCommand cmd = new MySqlCommand(query, GetConnection(), transaction);
+                cmd.Parameters.AddWithValue("@lastName", trainer.LastName);
+                cmd.Parameters.AddWithValue("@firstName", trainer.FirstName);
+                cmd.Parameters.AddWithValue("@middleName", trainer.MiddleName);
+                cmd.Parameters.AddWithValue("@dateOfBirth", trainer.DateOfBirth);
+
+                trainerId = Convert.ToInt32(cmd.ExecuteScalar());
+
+                // Добавляем специализации
+                if (trainer.SpecializationIds != null && trainer.SpecializationIds.Count > 0)
+                {
+                    foreach (int specId in trainer.SpecializationIds)
+                    {
+                        query = "INSERT INTO trainer_specialization_mapping (trainer_id, specialization_id) VALUES (@trainerId, @specId)";
+                        cmd = new MySqlCommand(query, GetConnection(), transaction);
+                        cmd.Parameters.AddWithValue("@trainerId", trainerId);
+                        cmd.Parameters.AddWithValue("@specId", specId);
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+
+                transaction.Commit();
+                return trainerId;
+            }
+            catch (Exception ex)
+            {
+                transaction?.Rollback();
+                MessageBox.Show($"Ошибка при добавлении тренера: {ex.Message}");
+                return -1;
+            }
+            finally
+            {
+                CloseConnection();
+            }
+        }
+
+
+
+        public List<Direction> GetAllDirections()
+        {
+            List<Direction> directions = new List<Direction>();
+
+            try
+            {
+                OpenConnection();
+                string query = "SELECT direction_id, name_d FROM directions ORDER BY name_d";
+                MySqlCommand cmd = new MySqlCommand(query, GetConnection());
+
+                using (MySqlDataReader reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        directions.Add(new Direction
+                        {
+                            DirectionId = reader.GetInt32("direction_id"),
+                            Name_d = reader.GetString("name_d")
+                        });
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Ошибка при загрузке направлений: {ex.Message}");
+            }
+            finally
+            {
+                CloseConnection();
+            }
+
+            return directions;
+        }
+
+        public List<Hall> GetAllHalls()
+        {
+            List<Hall> halls = new List<Hall>();
+
+            try
+            {
+                OpenConnection();
+                string query = "SELECT id_hall, name_hall FROM halls ORDER BY name_hall";
+                MySqlCommand cmd = new MySqlCommand(query, GetConnection());
+
+                using (MySqlDataReader reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        halls.Add(new Hall
+                        {
+                            HallId = reader.GetInt32("id_hall"),
+                            NameHall = reader.GetString("name_hall")
+                        });
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Ошибка при загрузке залов: {ex.Message}");
+            }
+            finally
+            {
+                CloseConnection();
+            }
+
+            return halls;
+        }
+
+        public Class GetClassById(int classId)
+        {
+            Class classObj = null;
+
+            try
+            {
+                OpenConnection();
+                string query = @"
+        SELECT 
+            class_id, 
+            class_date, 
+            start_time, 
+            end_time, 
+            direction_id, 
+            trainer_id,
+            (SELECT id_hall FROM bookings WHERE class_id = @classId LIMIT 1) as hall_id
+        FROM 
+            classes 
+        WHERE 
+            class_id = @classId";
+
+                MySqlCommand cmd = new MySqlCommand(query, GetConnection());
+                cmd.Parameters.AddWithValue("@classId", classId);
+
+                using (MySqlDataReader reader = cmd.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        classObj = new Class
+                        {
+                            ClassId = reader.GetInt32("class_id"),
+                            ClassDate = reader.GetDateTime("class_date"),
+                            StartTime = reader.GetTimeSpan("start_time"),
+                            EndTime = reader.GetTimeSpan("end_time"),
+                            DirectionId = reader.GetInt32("direction_id"),
+                            TrainerId = reader.GetInt32("trainer_id"),
+                            HallId = reader.IsDBNull(reader.GetOrdinal("hall_id")) ? 0 : reader.GetInt32("hall_id")
+                        };
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Ошибка при загрузке занятия: {ex.Message}");
+            }
+            finally
+            {
+                CloseConnection();
+            }
+
+            return classObj;
+        }
+
+        public bool AddClass(Class newClass)
+        {
+            MySqlTransaction transaction = null;
+
+            try
+            {
+                OpenConnection();
+                transaction = GetConnection().BeginTransaction();
+
+                // 1. Добавляем занятие в таблицу classes
+                string query = @"
+        INSERT INTO classes 
+            (direction_id, trainer_id, class_date, start_time, end_time) 
+        VALUES 
+            (@directionId, @trainerId, @classDate, @startTime, @endTime);
+        SELECT LAST_INSERT_ID();";
+
+                MySqlCommand cmd = new MySqlCommand(query, GetConnection(), transaction);
+                cmd.Parameters.AddWithValue("@directionId", newClass.DirectionId);
+                cmd.Parameters.AddWithValue("@trainerId", newClass.TrainerId);
+                cmd.Parameters.AddWithValue("@classDate", newClass.ClassDate);
+                cmd.Parameters.AddWithValue("@startTime", newClass.StartTime);
+                cmd.Parameters.AddWithValue("@endTime", newClass.EndTime);
+
+                int classId = Convert.ToInt32(cmd.ExecuteScalar());
+
+                // 2. Находим существующего клиента (например, администратора или тестового клиента)
+                int defaultClientId = GetDefaultClientId(transaction);
+
+                // 3. Добавляем запись в bookings для зала
+                query = @"
+        INSERT INTO bookings 
+            (class_id, client_id, booking_date, status_id, id_hall) 
+        VALUES 
+            (@classId, @clientId, @bookingDate, @statusId, @hallId)";
+
+                cmd = new MySqlCommand(query, GetConnection(), transaction);
+                cmd.Parameters.AddWithValue("@classId", classId);
+                cmd.Parameters.AddWithValue("@clientId", defaultClientId); // Используем реальный client_id
+                cmd.Parameters.AddWithValue("@bookingDate", DateTime.Now);
+                cmd.Parameters.AddWithValue("@statusId", 1); // Предполагаем, что статус 1 существует
+                cmd.Parameters.AddWithValue("@hallId", newClass.HallId);
+                cmd.ExecuteNonQuery();
+
+                transaction.Commit();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                transaction?.Rollback();
+                Console.WriteLine($"Ошибка при добавлении занятия: {ex.Message}");
+                return false;
+            }
+            finally
+            {
+                CloseConnection();
+            }
+        }
+
+        private int GetDefaultClientId(MySqlTransaction transaction)
+        {
+            // Попробуем найти первого клиента в системе
+            string query = "SELECT id_client FROM clients LIMIT 1";
+            MySqlCommand cmd = new MySqlCommand(query, GetConnection(), transaction);
+
+            object result = cmd.ExecuteScalar();
+            if (result != null)
+            {
+                return Convert.ToInt32(result);
+            }
+
+            // Если клиентов нет, создадим тестового клиента
+            query = @"
+    INSERT INTO clients 
+        (last_name, first_name, middle_name, date_of_birth, phone_number, email, name_role) 
+    VALUES 
+        ('Test', 'Client', 'System', '2000-01-01', '0000000000', 'test@system.com', 1);
+    SELECT LAST_INSERT_ID();";
+
+            cmd = new MySqlCommand(query, GetConnection(), transaction);
+            return Convert.ToInt32(cmd.ExecuteScalar());
+        }
+
+        public bool UpdateClass(Class updatedClass)
+        {
+            MySqlTransaction transaction = null;
+
+            try
+            {
+                OpenConnection();
+                transaction = GetConnection().BeginTransaction();
+
+                // Обновляем занятие
+                string query = @"
+        UPDATE classes 
+        SET 
+            direction_id = @directionId, 
+            trainer_id = @trainerId, 
+            class_date = @classDate, 
+            start_time = @startTime, 
+            end_time = @endTime
+        WHERE 
+            class_id = @classId";
+
+                MySqlCommand cmd = new MySqlCommand(query, GetConnection(), transaction);
+                cmd.Parameters.AddWithValue("@directionId", updatedClass.DirectionId);
+                cmd.Parameters.AddWithValue("@trainerId", updatedClass.TrainerId);
+                cmd.Parameters.AddWithValue("@classDate", updatedClass.ClassDate);
+                cmd.Parameters.AddWithValue("@startTime", updatedClass.StartTime);
+                cmd.Parameters.AddWithValue("@endTime", updatedClass.EndTime);
+                cmd.Parameters.AddWithValue("@classId", updatedClass.ClassId);
+                cmd.ExecuteNonQuery();
+
+                // Обновляем зал в bookings
+                query = "UPDATE bookings SET id_hall = @hallId WHERE class_id = @classId LIMIT 1";
+
+                cmd = new MySqlCommand(query, GetConnection(), transaction);
+                cmd.Parameters.AddWithValue("@hallId", updatedClass.HallId);
+                cmd.Parameters.AddWithValue("@classId", updatedClass.ClassId);
+                cmd.ExecuteNonQuery();
+
+                transaction.Commit();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                transaction?.Rollback();
+                Console.WriteLine($"Ошибка при обновлении занятия: {ex.Message}");
+                return false;
+            }
+            finally
+            {
+                CloseConnection();
+            }
+        }
     }
 
 
-    }
+}
+
+
+    
 

@@ -8,6 +8,7 @@
     Title="Авторизация"
     Width="500"
     Height="450"
+    Icon="/Resources/logo.png"
     ResizeMode="NoResize"
     WindowStartupLocation="CenterScreen"
     mc:Ignorable="d">

@@ -215,37 +215,15 @@ CREATE TABLE tasks (
     INDEX idx_task_status (is_completed)
 );
 
+ALTER TABLE bookings MODIFY client_id INT NULL;
 
-/*DELIMITER //
 
-CREATE PROCEDURE GenerateDailyTasks()
-BEGIN
-    DECLARE today DATE;
-    SET today = CURDATE();
-
-    -- Перенос невыполненных задач на сегодня
-    INSERT INTO tasks (task_date, admin_id, client_id, description, is_completed)
-    SELECT 
-        today, admin_id, client_id, description, FALSE
-    FROM tasks
-    WHERE task_date < today AND is_completed = FALSE;
-
-    -- Уведомления об окончании абонементов через 7 дней
-    INSERT INTO tasks (task_date, admin_id, client_id, description, is_completed)
-    SELECT 
-        today, cs.assigned_admin, cs.client_id,
-        CONCAT('Позвонить клиенту: абонемент заканчивается ', cs.subscription_end_date),
-        FALSE
-    FROM client_subscriptions cs
-    WHERE DATEDIFF(cs.subscription_end_date, today) = 7;
-END //
-
-DELIMITER ;*/
 
 DELIMITER $$
 
 CREATE PROCEDURE GenerateTasksForAdmin(IN admin_id INT)
 BEGIN
+    -- Уведомления об окончании абонементов через 3 дня
     INSERT INTO tasks (title, description, task_date, deadline, admin_id, client_id, is_completed)
     SELECT 
         'Напоминание о продлении абонемента',
@@ -259,17 +237,89 @@ BEGIN
         FALSE
     FROM client_subscriptions cs
     JOIN clients c ON cs.client_id = c.id_client
-    WHERE cs.subscription_end_date = CURDATE() + INTERVAL 3 DAY
-      AND cs.assigned_admin = admin_id
-      AND NOT EXISTS (
-          SELECT 1
-          FROM tasks t
-          WHERE t.admin_id = admin_id
-            AND t.client_id = c.id_client
-            AND t.deadline = cs.subscription_end_date
-            AND t.title = 'Напоминание о продлении абонемента'
-      );
+    WHERE 
+        -- Проверяем, что абонемент заканчивается в период от 1 до 3 дней с текущей даты
+        cs.subscription_end_date BETWEEN CURDATE() + INTERVAL 1 DAY AND CURDATE() + INTERVAL 3 DAY
+        AND cs.assigned_admin = admin_id
+        AND NOT EXISTS (
+            SELECT 1
+            FROM tasks t
+            WHERE t.admin_id = admin_id
+              AND t.client_id = c.id_client
+              AND t.deadline = cs.subscription_end_date
+              AND t.title = 'Напоминание о продлении абонемента'
+              AND t.is_completed = FALSE
+        );
+    
+    -- Перенос невыполненных просроченных задач на сегодня
+    INSERT INTO tasks (title, description, task_date, deadline, admin_id, client_id, is_completed)
+    SELECT 
+        t.title,
+        CONCAT('ПРОСРОЧЕНО: ', t.description),
+        CURDATE(),
+        t.deadline,
+        t.admin_id,
+        t.client_id,
+        FALSE
+    FROM tasks t
+    WHERE 
+        t.deadline < CURDATE() 
+        AND t.is_completed = FALSE
+        AND t.admin_id = admin_id
+        AND NOT EXISTS (
+            SELECT 1
+            FROM tasks t2
+            WHERE t2.admin_id = t.admin_id
+              AND t2.client_id = t.client_id
+              AND t2.deadline = t.deadline
+              AND t2.title = CONCAT('ПРОСРОЧЕНО: ', t.title)
+              AND t2.is_completed = FALSE
+        );
 END$$
 
 DELIMITER ;
 
+DELIMITER $$
+
+CREATE PROCEDURE GenerateAdminCredentials(
+    IN p_last_name VARCHAR(50),
+    IN p_first_name VARCHAR(50),
+    IN p_middle_name VARCHAR(50),
+    IN p_date_of_birth DATE,
+    IN p_phone_number VARCHAR(20),
+    IN p_email VARCHAR(100),
+    IN p_role_admin INT
+)
+BEGIN
+    DECLARE v_login VARCHAR(20);
+    DECLARE v_password VARCHAR(255);
+    
+    -- Генерация логина (первые 5 букв фамилии + год рождения)
+    SET v_login = CONCAT(
+        LOWER(SUBSTRING(p_last_name, 1, 5)),
+        YEAR(p_date_of_birth)
+    );
+    
+    -- Генерация временного пароля (6 случайных цифр)
+    SET v_password = LPAD(FLOOR(RAND() * 1000000), 6, '0');
+    
+    -- Вставка нового администратора
+    INSERT INTO administrators (
+        last_name, first_name, middle_name, date_of_birth,
+        phone_number, email, role_admin, login, pasw_admin
+    ) VALUES (
+        p_last_name, p_first_name, p_middle_name, p_date_of_birth,
+        p_phone_number, p_email, p_role_admin, v_login, SHA2(v_password, 256)
+    );
+    
+    -- Возвращаем сгенерированные учетные данные
+    SELECT v_login AS login, v_password AS temporary_password;
+END$$
+
+DELIMITER ;
+
+
+ALTER TABLE administrators
+ADD COLUMN is_active BOOLEAN NOT NULL DEFAULT TRUE,
+ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+ADD COLUMN last_login TIMESTAMP NULL;

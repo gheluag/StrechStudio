@@ -18,16 +18,11 @@ namespace STRETCHING.Entities
 
         public string FullName => $"{LastName} {FirstName} {MiddleName}";
         public string ShortName => $"{LastName} {FirstName[0]}.{MiddleName[0]}.";
+        public List<string> SpecializationNamesList =>
+       string.IsNullOrEmpty(SpecializationNames)
+           ? new List<string>()
+           : SpecializationNames.Split(new[] { ", " }, StringSplitOptions.None).ToList();
 
-        public List<string> SpecializationNamesList
-        {
-            get
-            {
-                if (string.IsNullOrEmpty(SpecializationNames))
-                    return new List<string> { "Специализации не указаны" };
 
-                return SpecializationNames.Split(new[] { ", " }, StringSplitOptions.RemoveEmptyEntries).ToList();
-            }
-        }
     }
 }

@@ -183,7 +183,7 @@ INSERT INTO client_subscriptions (subscription_id, payment_id, total_classes, re
 (1, 6, 1, 0, '2025-02-03', '2025-02-03', 2, 6),
 (2, 7, 8, 0, '2025-02-05', '2025-03-05', 3, 7),
 (3, 8, 12, 0, '2025-02-10', '2025-03-10', 1, 8),
-(4, 9, 999, 0, '2025-02-12', '2025-03-12', 2, 9),
+(4, 9, 999, 0, '2024-05-25', '2025-05-25', 2, 9),
 (2, 10, 8, 0, '2025-02-18', '2025-03-18', 3, 10),
 (1, 11, 1, 0, '2025-03-02', '2025-03-02', 1, 11),
 (2, 12, 8, 0, '2025-03-05', '2025-04-05', 2, 12),
@@ -305,6 +305,11 @@ VALUES (
   3
 );
 
+
+INSERT INTO clients 
+    (last_name, first_name, middle_name, date_of_birth, phone_number, email, name_role) 
+VALUES 
+    ('System', 'Reserved', 'Client', '2000-01-01', '0000000000', 'system@reserved.com', 1);
 
 /*SELECT 
     t.trainer_id,

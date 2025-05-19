@@ -59,16 +59,7 @@
                     </StackPanel>
                 </Border>
 
-                <Border Style="{StaticResource ListContainer}">
-                    <StackPanel>
-                        <TextBlock Style="{StaticResource SectionTitle}" Text="Бронирования залов" />
-                        <ListBox x:Name="BookingsList">
-
-                            <ListBoxItem Content="Зал 1 - 18:00, Тренировка персональная" />
-                            <ListBoxItem Content="Зал 2 - 19:00, Аренда" />
-                        </ListBox>
-                    </StackPanel>
-                </Border>
+              
             </StackPanel>
 
             <Border Grid.Column="1" Style="{StaticResource ListContainer}"

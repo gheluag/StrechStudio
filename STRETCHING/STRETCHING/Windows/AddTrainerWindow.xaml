@@ -8,8 +8,9 @@
     Width="400"
     Height="550"
     Background="White"
-    WindowStartupLocation="CenterScreen"
-    ResizeMode="NoResize">
+    Icon="/Resources/logo.png"
+    ResizeMode="NoResize"
+    WindowStartupLocation="CenterScreen">
 
     <Grid Margin="15">
         <Grid.RowDefinitions>
@@ -20,74 +21,156 @@
             <RowDefinition Height="20" />
             <RowDefinition Height="35" />
             <RowDefinition Height="20" />
-            <RowDefinition Height="50" />
+            <RowDefinition Height="60" />
             <RowDefinition Height="20" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="50" />
         </Grid.RowDefinitions>
 
-        <!-- Фамилия -->
-        <TextBlock Grid.Row="0" Margin="0,0,0,5" Foreground="#2A503D" Text="Фамилия:" />
-        <Border Grid.Row="1" Margin="0,0,0,10" BorderBrush="#BBA276" BorderThickness="1" CornerRadius="6">
-            <TextBox x:Name="LastNameTextBox" Padding="5" Background="Transparent" BorderThickness="0" />
+        <!--  Фамилия  -->
+        <TextBlock
+            Grid.Row="0"
+            Margin="0,0,0,5"
+            Foreground="#2A503D"
+            Text="Фамилия:" />
+        <Border
+            Grid.Row="1"
+            Margin="0,0,0,10"
+            BorderBrush="#BBA276"
+            BorderThickness="1"
+            CornerRadius="6">
+            <TextBox
+                x:Name="LastNameTextBox"
+                Padding="5"
+                Background="Transparent"
+                BorderThickness="0"
+                PreviewTextInput="Name_PreviewTextInput" />
         </Border>
 
-        <!-- Имя -->
-        <TextBlock Grid.Row="2" Margin="0,0,0,5" Foreground="#2A503D" Text="Имя:" />
-        <Border Grid.Row="3" Margin="0,0,0,10" BorderBrush="#BBA276" BorderThickness="1" CornerRadius="6">
-            <TextBox x:Name="FirstNameTextBox" Padding="5" Background="Transparent" BorderThickness="0" />
+        <!--  Имя  -->
+        <TextBlock
+            Grid.Row="2"
+            Margin="0,0,0,5"
+            Foreground="#2A503D"
+            Text="Имя:" />
+        <Border
+            Grid.Row="3"
+            Margin="0,0,0,10"
+            BorderBrush="#BBA276"
+            BorderThickness="1"
+            CornerRadius="6">
+            <TextBox
+                x:Name="FirstNameTextBox"
+                Padding="5"
+                Background="Transparent"
+                BorderThickness="0"
+                PreviewTextInput="Name_PreviewTextInput" />
         </Border>
 
-        <!-- Отчество -->
-        <TextBlock Grid.Row="4" Margin="0,0,0,5" Foreground="#2A503D" Text="Отчество:" />
-        <Border Grid.Row="5" Margin="0,0,0,10" BorderBrush="#BBA276" BorderThickness="1" CornerRadius="6">
-            <TextBox x:Name="MiddleNameTextBox" Padding="5" Background="Transparent" BorderThickness="0" />
+        <!--  Отчество  -->
+        <TextBlock
+            Grid.Row="4"
+            Margin="0,0,0,5"
+            Foreground="#2A503D"
+            Text="Отчество:" />
+        <Border
+            Grid.Row="5"
+            Margin="0,0,0,10"
+            BorderBrush="#BBA276"
+            BorderThickness="1"
+            CornerRadius="6">
+            <TextBox
+                x:Name="MiddleNameTextBox"
+                Padding="5"
+                Background="Transparent"
+                BorderThickness="0"
+                PreviewTextInput="Name_PreviewTextInput" />
         </Border>
 
-        <!-- Дата рождения -->
-        <TextBlock Grid.Row="6" Margin="0,0,0,5" Foreground="#2A503D" Text="Дата рождения:" />
-        <StackPanel Grid.Row="7" HorizontalAlignment="Center" Orientation="Horizontal">
+        <!--  Дата рождения  -->
+        <TextBlock
+            Grid.Row="6"
+            Margin="0,0,0,5"
+            Foreground="#2A503D"
+            Text="Дата рождения:" />
+        <StackPanel
+            Grid.Row="7"
+            HorizontalAlignment="Center"
+            Orientation="Horizontal">
             <StackPanel Margin="5">
-                <ComboBox x:Name="DayComboBox" Width="50" Style="{StaticResource ModernComboBoxStyle}" />
+                <ComboBox
+                    x:Name="DayComboBox"
+                    Width="50"
+                    Style="{StaticResource ModernComboBoxStyle}" />
                 <TextBlock HorizontalAlignment="Center" Text="День" />
             </StackPanel>
             <StackPanel Margin="5">
-                <ComboBox x:Name="MonthComboBox" Width="100" Style="{StaticResource ModernComboBoxStyle}" />
+                <ComboBox
+                    x:Name="MonthComboBox"
+                    Width="100"
+                    Style="{StaticResource ModernComboBoxStyle}" />
                 <TextBlock HorizontalAlignment="Center" Text="Месяц" />
             </StackPanel>
             <StackPanel Margin="5">
-                <ComboBox x:Name="YearComboBox" Width="65" Style="{StaticResource ModernComboBoxStyle}" />
+                <ComboBox
+                    x:Name="YearComboBox"
+                    Width="65"
+                    Style="{StaticResource ModernComboBoxStyle}" />
                 <TextBlock HorizontalAlignment="Center" Text="Год" />
             </StackPanel>
         </StackPanel>
 
-        <!-- Специализации -->
-        <TextBlock Grid.Row="8" Margin="0,0,0,5" Foreground="#2A503D" Text="Специализации:" />
+        <!--  Специализации  -->
+        <TextBlock
+            Grid.Row="8"
+            Margin="0,0,0,5"
+            Foreground="#2A503D"
+            Text="Специализация:" />
 
-        <!-- Основной список специализаций -->
-        <Border Grid.Row="9" Margin="0,0,0,5" BorderBrush="#BBA276" BorderThickness="1" CornerRadius="6">
+        <!--  Основной список специализаций  -->
+        <Border
+            Grid.Row="9"
+            Margin="0,0,0,5"
+            BorderBrush="#BBA276"
+            BorderThickness="0"
+            CornerRadius="6">
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
-                <ComboBox x:Name="MainSpecializationComboBox" 
-                          Grid.Column="0"
-                          Style="{StaticResource ModernComboBoxStyle}"
-                          DisplayMemberPath="Name"
-                          Margin="5"/>
+                <ComboBox
+                    x:Name="MainSpecializationComboBox"
+                    Grid.Column="0"
+                    Margin="5"
+                    DisplayMemberPath="Name"
+                    Style="{StaticResource ModernComboBoxStyle}" />
             </Grid>
         </Border>
 
-       
-        <!-- Кнопки -->
-        <StackPanel Grid.Row="11" HorizontalAlignment="Right" Orientation="Horizontal">
-            <Button x:Name="SaveButton" Width="100" Height="30" Margin="0,0,10,0"
-                    Click="SaveButton_Click" Content="Сохранить" Style="{StaticResource MainButton}" />
-            <Button x:Name="CancelButton" Width="100" Height="30"
-                    Click="CancelButton_Click" Content="Отмена" Style="{StaticResource SecondaryButton}" />
+
+        <!--  Кнопки  -->
+        <StackPanel
+            Grid.Row="11"
+            HorizontalAlignment="Right"
+            Orientation="Horizontal">
+            <Button
+                x:Name="SaveButton"
+                Width="100"
+                Height="30"
+                Margin="0,0,10,0"
+                Click="SaveButton_Click"
+                Content="Сохранить"
+                Style="{StaticResource MainButton}" />
+            <Button
+                x:Name="CancelButton"
+                Width="100"
+                Height="30"
+                Click="CancelButton_Click"
+                Content="Отмена"
+                Style="{StaticResource SecondaryButton}" />
         </StackPanel>
     </Grid>
 </Window>

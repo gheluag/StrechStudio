@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -22,54 +23,29 @@ namespace STRETCHING.Windows
     public partial class AddTrainerWindow : Window
     {
         private readonly DataBase db = new DataBase();
-        public Trainer Trainer { get; private set; }
+
         private List<TrainerSpecialization> _allSpecializations;
-        private ObservableCollection<SpecializationViewModel> _addedSpecializations;
         public AddTrainerWindow()
         {
             InitializeComponent();
-            Trainer = new Trainer();
-            _addedSpecializations = new ObservableCollection<SpecializationViewModel>();
             InitializeDateControls();
+
             LoadSpecializations();
         }
 
-        public AddTrainerWindow(Trainer trainer) : this()
+
+        private void LoadSpecializations()
         {
-            Trainer = trainer;
-            LastNameTextBox.Text = trainer.LastName;
-            FirstNameTextBox.Text = trainer.FirstName;
-            MiddleNameTextBox.Text = trainer.MiddleName;
-
-            // Установка даты рождения
-            if (trainer.DateOfBirth != default)
-            {
-                SetSelectedDate(trainer.DateOfBirth);
-            }
-
-            // Добавление существующих специализаций
-            if (trainer.SpecializationIds != null && trainer.SpecializationIds.Any())
-            {
-                foreach (var specId in trainer.SpecializationIds)
-                {
-                    var spec = _allSpecializations.FirstOrDefault(s => s.SpecializationId == specId);
-                    if (spec != null)
-                    {
-                        AddSpecialization(spec);
-                    }
-                }
-            }
+            _allSpecializations = db.GetSpecializations();
+            MainSpecializationComboBox.ItemsSource = _allSpecializations;
         }
-
         private void InitializeDateControls()
         {
-            // Заполнение дней (1-31)
             for (int i = 1; i <= 31; i++)
             {
                 DayComboBox.Items.Add(i);
             }
 
-            // Заполнение месяцев
             var months = new List<string>
             {
                 "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
@@ -95,21 +71,20 @@ namespace STRETCHING.Windows
             YearComboBox.SelectedItem = date.Year;
         }
 
+
         private DateTime? GetSelectedDate()
         {
             if (DayComboBox.SelectedItem == null ||
                 MonthComboBox.SelectedItem == null ||
                 YearComboBox.SelectedItem == null)
-            {
                 return null;
-            }
+
+            int day = (int)DayComboBox.SelectedItem;
+            int month = MonthComboBox.SelectedIndex + 1;
+            int year = (int)YearComboBox.SelectedItem;
 
             try
             {
-                int day = (int)DayComboBox.SelectedItem;
-                int month = MonthComboBox.SelectedIndex + 1;
-                int year = (int)YearComboBox.SelectedItem;
-
                 return new DateTime(year, month, day);
             }
             catch
@@ -117,106 +92,111 @@ namespace STRETCHING.Windows
                 return null;
             }
         }
-
-        private void LoadSpecializations()
+        private void Name_PreviewTextInput(object sender, TextCompositionEventArgs e)
         {
-            _allSpecializations = db.GetAllSpecializations();
-            MainSpecializationComboBox.ItemsSource = _allSpecializations;
-
-            if (_allSpecializations.Any())
+            // Разрешаем только буквы, дефисы и пробелы
+            if (!Regex.IsMatch(e.Text, @"^[a-zA-Zа-яА-ЯёЁ\- ]$"))
             {
-                MainSpecializationComboBox.SelectedIndex = 0;
+                e.Handled = true;
             }
         }
 
-        private void AddSpecialization(TrainerSpecialization specialization)
+        private bool IsValidName(string name)
         {
-            var availableSpecs = _allSpecializations
-                .Where(s => !_addedSpecializations.Any(aspec => aspec.SelectedSpecialization?.SpecializationId == s.SpecializationId))
-                .ToList();
+            // Проверяем, что имя не состоит только из цифр или повторяющихся символов
+            if (string.IsNullOrWhiteSpace(name))
+                return false;
 
-            var vm = new SpecializationViewModel
-            {
-                AvailableSpecializations = availableSpecs,
-                SelectedSpecialization = specialization
-            };
+            // Проверка на содержание только цифр
+            if (Regex.IsMatch(name, @"^[\d\s]+$"))
+                return false;
 
-            _addedSpecializations.Add(vm);
-            UpdateMainComboBoxItems();
+            // Проверка на повторяющиеся символы (например, "111" или "aaa")
+            if (name.Length > 1 && name.Distinct().Count() == 1)
+                return false;
+
+            // Проверка минимальной длины имени (минимум 2 символа)
+            if (name.Trim().Length < 2)
+                return false;
+
+            return true;
         }
 
-        private void UpdateMainComboBoxItems()
+        private bool IsValidBirthDate(DateTime date)
         {
-            var availableSpecs = _allSpecializations
-                .Where(s => !_addedSpecializations.Any(aspec => aspec.SelectedSpecialization?.SpecializationId == s.SpecializationId))
-                .ToList();
+            // Тренер должен быть не младше 18 лет и не старше 100 лет
+            int minAge = 18;
+            int maxAge = 100;
+            int age = DateTime.Today.Year - date.Year;
 
-            MainSpecializationComboBox.ItemsSource = availableSpecs;
+            if (date > DateTime.Today.AddYears(-age)) age--;
 
-            
-            
-                MainSpecializationComboBox.SelectedIndex = 0;
-            
-           
-        }
-
-        private void AddSpecializationButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (MainSpecializationComboBox.SelectedItem is TrainerSpecialization selectedSpec)
-            {
-                AddSpecialization(selectedSpec);
-            }
-        }
-
-        private void RemoveSpecializationButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (((Button)sender).Tag is SpecializationViewModel vm)
-            {
-                _addedSpecializations.Remove(vm);
-                UpdateMainComboBoxItems();
-            }
+            return age >= minAge && age <= maxAge;
         }
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(LastNameTextBox.Text) ||
-                string.IsNullOrWhiteSpace(FirstNameTextBox.Text))
+            // Валидация ФИО
+            if (!IsValidName(LastNameTextBox.Text) ||
+                !IsValidName(FirstNameTextBox.Text) ||
+                !IsValidName(MiddleNameTextBox.Text))
             {
-                MessageBox.Show("Пожалуйста, заполните обязательные поля (Фамилия, Имя).",
-                              "Ошибка",
-                              MessageBoxButton.OK,
-                              MessageBoxImage.Error);
+                MessageBox.Show("ФИО тренера должно содержать минимум 2 символа и не может состоять только из цифр или повторяющихся символов.",
+                              "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
-            var selectedDate = GetSelectedDate();
-            if (!selectedDate.HasValue)
+            // Проверка даты рождения
+            DateTime? birthDate = GetSelectedDate();
+            if (!birthDate.HasValue)
             {
-                MessageBox.Show("Пожалуйста, укажите корректную дату рождения.",
-                              "Ошибка",
-                              MessageBoxButton.OK,
-                              MessageBoxImage.Error);
+                MessageBox.Show("Пожалуйста, выберите корректную дату рождения",
+                              "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
-            Trainer.LastName = LastNameTextBox.Text.Trim();
-            Trainer.FirstName = FirstNameTextBox.Text.Trim();
-            Trainer.MiddleName = MiddleNameTextBox.Text.Trim();
-            Trainer.DateOfBirth = selectedDate.Value;
+            if (!IsValidBirthDate(birthDate.Value))
+            {
+                MessageBox.Show($"Тренер должен быть в возрасте от 18 до 100 лет.",
+                              "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
 
-            // Получаем выбранные специализации
-            Trainer.SpecializationIds = _addedSpecializations
-                .Where(vm => vm.SelectedSpecialization != null)
-                .Select(vm => vm.SelectedSpecialization.SpecializationId)
-                .ToList();
+            // Проверка специализации
+            if (MainSpecializationComboBox.SelectedItem == null)
+            {
+                MessageBox.Show("Пожалуйста, выберите специализацию тренера",
+                              "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
 
-            Trainer.SpecializationNames = string.Join(", ",
-                _addedSpecializations
-                    .Where(vm => vm.SelectedSpecialization != null)
-                    .Select(vm => vm.SelectedSpecialization.Name));
+            // Создание объекта тренера
+            var trainer = new Trainer
+            {
+                LastName = LastNameTextBox.Text.Trim(),
+                FirstName = FirstNameTextBox.Text.Trim(),
+                MiddleName = MiddleNameTextBox.Text.Trim(),
+                DateOfBirth = birthDate.Value,
+                SpecializationIds = new List<int> { ((TrainerSpecialization)MainSpecializationComboBox.SelectedItem).SpecializationId }
+            };
 
-            DialogResult = true;
-            Close();
+         
+          
+
+            // Добавление в базу данных
+            int trainerId = db.AddTrainer(trainer);
+            if (trainerId > 0)
+            {
+                MessageBox.Show("Тренер успешно добавлен",
+                              "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+                DialogResult = true;
+                Close();
+            }
+            else
+            {
+                MessageBox.Show("Не удалось добавить тренера",
+                              "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private void CancelButton_Click(object sender, RoutedEventArgs e)
@@ -226,10 +206,6 @@ namespace STRETCHING.Windows
         }
     }
 
-    public class SpecializationViewModel
-    {
-        public List<TrainerSpecialization> AvailableSpecializations { get; set; }
-        public TrainerSpecialization SelectedSpecialization { get; set; }
-    }
+    
 }
 

@@ -6,5 +6,8 @@
     StartupUri="Windows/AuthenticateWindow.xaml">
     <Application.Resources>
         <ResourceDictionary Source="Helpers/StylesDic.xaml" />
+
+
+
     </Application.Resources>
 </Application>

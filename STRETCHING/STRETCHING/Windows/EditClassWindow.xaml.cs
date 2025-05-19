@@ -16,19 +16,23 @@ using System.Windows.Shapes;
 namespace STRETCHING.Windows
 {
     /// <summary>
-    /// Логика взаимодействия для AddClassWindow.xaml
+    /// Логика взаимодействия для EditClassWindow.xaml
     /// </summary>
-    public partial class AddClassWindow : Window
+    public partial class EditClassWindow : Window
     {
         private readonly DataBase db = new DataBase();
+        private readonly int _classId;
         private List<Direction> _directions;
         private List<Trainer> _trainers;
         private List<Hall> _halls;
-        public AddClassWindow()
+        private Class _currentClass;
+        public EditClassWindow(int classId)
         {
             InitializeComponent();
+            _classId = classId;
             LoadData();
             InitializeTimeComboBoxes();
+            LoadClassData();
         }
 
         private void LoadData()
@@ -42,8 +46,6 @@ namespace STRETCHING.Windows
                 DirectionComboBox.ItemsSource = _directions;
                 TrainerComboBox.ItemsSource = _trainers;
                 HallComboBox.ItemsSource = _halls;
-
-                ClassDatePicker.SelectedDate = DateTime.Today;
             }
             catch (Exception ex)
             {
@@ -64,10 +66,59 @@ namespace STRETCHING.Windows
                     EndTimeComboBox.Items.Add(time.ToString(@"hh\:mm"));
                 }
             }
+        }
 
-            // Устанавливаем время по умолчанию
-            StartTimeComboBox.SelectedIndex = 0;
-            EndTimeComboBox.SelectedIndex = 2; // 1.5 часа после начала
+        private void LoadClassData()
+        {
+            try
+            {
+                _currentClass = db.GetClassById(_classId);
+                if (_currentClass == null)
+                {
+                    MessageBox.Show("Занятие не найдено", "Ошибка",
+                                  MessageBoxButton.OK, MessageBoxImage.Error);
+                    Close();
+                    return;
+                }
+
+                ClassDatePicker.SelectedDate = _currentClass.ClassDate;
+                StartTimeComboBox.SelectedItem = _currentClass.StartTime.ToString(@"hh\:mm");
+                EndTimeComboBox.SelectedItem = _currentClass.EndTime.ToString(@"hh\:mm");
+
+                // Устанавливаем выбранные элементы в комбобоксы
+                foreach (var direction in _directions)
+                {
+                    if (direction.DirectionId == _currentClass.DirectionId)
+                    {
+                        DirectionComboBox.SelectedItem = direction;
+                        break;
+                    }
+                }
+
+                foreach (var trainer in _trainers)
+                {
+                    if (trainer.TrainerId == _currentClass.TrainerId)
+                    {
+                        TrainerComboBox.SelectedItem = trainer;
+                        break;
+                    }
+                }
+
+                foreach (var hall in _halls)
+                {
+                    if (hall.HallId == _currentClass.HallId)
+                    {
+                        HallComboBox.SelectedItem = hall;
+                        break;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка при загрузке данных занятия: {ex.Message}", "Ошибка",
+                              MessageBoxButton.OK, MessageBoxImage.Error);
+                Close();
+            }
         }
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
@@ -77,30 +128,27 @@ namespace STRETCHING.Windows
 
             try
             {
-                var newClass = new Class
-                {
-                    ClassDate = ClassDatePicker.SelectedDate.Value,
-                    StartTime = TimeSpan.Parse(StartTimeComboBox.SelectedItem.ToString()),
-                    EndTime = TimeSpan.Parse(EndTimeComboBox.SelectedItem.ToString()),
-                    DirectionId = ((Direction)DirectionComboBox.SelectedItem).DirectionId,
-                    TrainerId = ((Trainer)TrainerComboBox.SelectedItem).TrainerId,
-                    HallId = ((Hall)HallComboBox.SelectedItem).HallId
-                };
+                _currentClass.ClassDate = ClassDatePicker.SelectedDate.Value;
+                _currentClass.StartTime = TimeSpan.Parse(StartTimeComboBox.SelectedItem.ToString());
+                _currentClass.EndTime = TimeSpan.Parse(EndTimeComboBox.SelectedItem.ToString());
+                _currentClass.DirectionId = ((Direction)DirectionComboBox.SelectedItem).DirectionId;
+                _currentClass.TrainerId = ((Trainer)TrainerComboBox.SelectedItem).TrainerId;
+                _currentClass.HallId = ((Hall)HallComboBox.SelectedItem).HallId;
 
-                if (db.AddClass(newClass))
+                if (db.UpdateClass(_currentClass))
                 {
                     DialogResult = true;
                     Close();
                 }
                 else
                 {
-                    MessageBox.Show("Не удалось добавить занятие", "Ошибка",
+                    MessageBox.Show("Не удалось обновить занятие", "Ошибка",
                                   MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка при добавлении занятия: {ex.Message}", "Ошибка",
+                MessageBox.Show($"Ошибка при обновлении занятия: {ex.Message}", "Ошибка",
                               MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }

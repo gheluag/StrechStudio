@@ -29,7 +29,7 @@
                 <TextBox
                     x:Name="SearchBox"
                     Width="250"
-                    VerticalAlignment="Center"
+                    VerticalAlignment="Bottom"
                     Style="{StaticResource SearchBox}"
                     TextChanged="SearchBox_TextChanged" />
             </Border>
@@ -43,10 +43,10 @@
                     Click="AddClient_Click"
                     Content="Добавить"
                     Style="{StaticResource MainButton}" />
-                <Button
+                <!--   <Button
                     Click="EditClient_Click"
                     Content="Редактировать"
-                    Style="{StaticResource MainButton}" />
+                    Style="{StaticResource MainButton}" />!-->
             </StackPanel>
         </DockPanel>
 
@@ -55,12 +55,12 @@
             Grid.Row="2"
             Height="650"
             VerticalAlignment="Top"
-            Background="#FAFAFA"
+            Background="Transparent"
             BorderBrush="#BBA276"
-            BorderThickness="1"
+            BorderThickness="0"
             CornerRadius="8">
 
-            <ScrollViewer Background="Transparent" BorderThickness="0">
+            <ScrollViewer>
                 <ListBox
                     x:Name="ClientsListBox"
                     Margin="10"
@@ -68,31 +68,30 @@
                     BorderThickness="0"
                     SelectionChanged="ClientsListBox_SelectionChanged">
 
-                    <!--  Сброс стандартного стиля ListBoxItem  -->
                     <ListBox.ItemContainerStyle>
                         <Style TargetType="ListBoxItem">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="ListBoxItem">
+                                        <ContentPresenter />
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
                             <Setter Property="Background" Value="Transparent" />
                             <Setter Property="BorderBrush" Value="Transparent" />
-                            <Setter Property="BorderThickness" Value="0" />
-                            <Setter Property="Padding" Value="0" />
-                            <Setter Property="Margin" Value="0" />
-                            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-                            <Setter Property="VerticalContentAlignment" Value="Top" />
-                            <Setter Property="Focusable" Value="False" />
+                            <Setter Property="Margin" Value="0,0,0,10" />
                         </Style>
                     </ListBox.ItemContainerStyle>
 
-                    <!--  Шаблон элемента  -->
                     <ListBox.ItemTemplate>
                         <DataTemplate>
                             <Border
-                                Margin="0,0,0,10"
                                 Padding="10"
                                 Background="White"
                                 BorderBrush="#E0E0E0"
                                 BorderThickness="1"
                                 CornerRadius="6">
-                                <StackPanel>
+                                <StackPanel Height="50">
                                     <TextBlock
                                         FontSize="14"
                                         FontWeight="SemiBold"

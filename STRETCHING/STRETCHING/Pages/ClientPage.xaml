@@ -11,7 +11,7 @@
     <Grid Margin="10">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="500"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
@@ -32,12 +32,17 @@
 
         <!-- Основное содержимое -->
         <TabControl Grid.Row="1" Margin="0,10"
+                     Height="700"
+ Width="1150"
+ VerticalAlignment="Top"
                      Style="{StaticResource StyledTabControl}">
             <TabControl.ItemContainerStyle>
                 <Style BasedOn="{StaticResource StyledTabItem}" TargetType="{x:Type TabItem}" />
             </TabControl.ItemContainerStyle>
             <TabItem Header="Основная информация">
-                <ScrollViewer>
+                <ScrollViewer
+                    ScrollViewer.VerticalScrollBarVisibility="Hidden"
+                   >
                     <Grid Margin="10">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
